@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient } = require('mongodb');
+const ObjectId = require('mongodb').ObjectId;
 
 require('dotenv').config();
 
@@ -28,6 +29,16 @@ async function run() {
             res.send(products);
         })
 
+        // GET METHOD for loading Orders
+        app.get('/orders', async (req, res) => {
+            const email = req.query.email;
+            const query = { cus_email: email };
+            const cursor = ordersCollection.find(query);
+            const orders = await cursor.toArray();
+            res.json(orders);
+            console.log(orders);
+        })
+
         // POST Method for Sending Orders to database
         app.post('/orders', async (req, res) => {
             const doc = req.body;
@@ -35,6 +46,30 @@ async function run() {
             res.json(result);
         })
 
+        // POST METHOD for sending users to database
+        app.post('/users')
+
+        // Delete Method For Deleting Order
+        app.delete('/orders', async (req, res) => {
+            const id = req.query.id;
+            const query = { _id: ObjectId(id) };
+            const result = await ordersCollection.deleteOne(query);
+            res.json(result);
+        })
+
+        // PUT METHOD for cancelling an order 
+        app.put('/orders', async (req, res) => {
+            const id = req.query.id;
+            console.log(id);
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    status: 'cancelled'
+                },
+            };
+            const result = await ordersCollection.updateOne(filter, updateDoc);
+            res.json(result);
+        })
     }
     finally {
         // await client.close()
