@@ -19,12 +19,20 @@ async function run() {
         const database = client.db("hoogtech");
         console.log('Connected TO Database');
         const productsCollection = database.collection('products');
+        const ordersCollection = database.collection('orders');
 
         // GET Method for loading products
         app.get('/products', async (req, res) => {
             const cursor = productsCollection.find({});
             const products = await cursor.toArray();
             res.send(products);
+        })
+
+        // POST Method for Sending Orders to database
+        app.post('/orders', async (req, res) => {
+            const doc = req.body;
+            const result = await ordersCollection.insertOne(doc);
+            res.json(result);
         })
 
     }
