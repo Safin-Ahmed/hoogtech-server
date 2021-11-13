@@ -53,7 +53,7 @@ async function run() {
             res.send(products);
         })
 
-        // GET METHOD for loading Orders
+        // GET METHOD for loading Specific Orders
         app.get('/orders', verifyToken, async (req, res) => {
             const email = req.query.email;
             const query = { cus_email: email };
@@ -61,6 +61,17 @@ async function run() {
             const orders = await cursor.toArray();
             res.json(orders);
             console.log(orders);
+        })
+
+        // GET METHOD for loading all orders 
+        app.get('/allOrders', verifyToken, async (req, res) => {
+
+            const cursor = ordersCollection.find({});
+            const orders = await cursor.toArray();
+            res.json(orders);
+            console.log(orders);
+
+
         })
 
         // GET METHOD for Loading Reviews 
@@ -80,6 +91,13 @@ async function run() {
                 isAdmin = true;
             }
             res.json({ admin: isAdmin });
+        })
+
+        // POST METHOD For Adding Products 
+        app.post('/products', verifyToken, async (req, res) => {
+            const doc = req.body;
+            const result = await productsCollection.insertOne(doc);
+            res.json(result);
         })
 
         // POST METHOD for uploading reviews 
