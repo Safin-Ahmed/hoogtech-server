@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+var admin = require("firebase-admin");
 const { MongoClient } = require('mongodb');
 const ObjectId = require('mongodb').ObjectId;
 
@@ -8,6 +9,27 @@ require('dotenv').config();
 const app = express();
 app.use(cors());
 app.use(express.json())
+
+var serviceAccount = require("./hoogtech-firebase-adminsdk.json");
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+});
+
+async function verifyToken(req, res, next) {
+    if (req.headers?.authorization.startsWith('Bearer ')) {
+        const token = req.headers.authorization.split(' ')[1];
+
+        try {
+            const decodedUser = await admin.auth().verifyIdToken(token);
+            req.decodedEmail = decodedUser.email;
+        }
+        catch {
+
+        }
+    }
+    next();
+}
 
 const port = process.env.PORT || 5000;
 
@@ -32,7 +54,7 @@ async function run() {
         })
 
         // GET METHOD for loading Orders
-        app.get('/orders', async (req, res) => {
+        app.get('/orders', verifyToken, async (req, res) => {
             const email = req.query.email;
             const query = { cus_email: email };
             const cursor = ordersCollection.find(query);
@@ -46,6 +68,18 @@ async function run() {
             const cursor = reviewsCollection.find({});
             const reviews = await cursor.toArray();
             res.json(reviews);
+        })
+
+        // GET METHOD for Verifying Admin Role
+        app.get('/users/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            let isAdmin = false;
+            if (user?.role === 'admin') {
+                isAdmin = true;
+            }
+            res.json({ admin: isAdmin });
         })
 
         // POST METHOD for uploading reviews 
@@ -89,6 +123,29 @@ async function run() {
             };
             const result = await ordersCollection.updateOne(filter, updateDoc);
             res.json(result);
+        })
+
+        // PUT METHOD FOR MAKING ADMIN 
+        app.put('/users/admin', verifyToken, async (req, res) => {
+            const user = req.body;
+            const requester = req.decodedEmail;
+            console.log(requester);
+            if (requester) {
+                const requesterAccount = usersCollection.findOne({ email: requester });
+                console.log(requesterAccount);
+                if (requesterAccount.role == "admin") {
+                    const filter = { email: user.email };
+                    const updateDoc = {
+                        $set: { role: 'admin' }
+                    };
+                    const result = await usersCollection.updateOne(filter, updateDoc);
+                    res.json(result);
+                }
+                else {
+                    res.status(403).json({ message: 'You do not have access to this page' });
+                }
+            }
+
         })
     }
     finally {
