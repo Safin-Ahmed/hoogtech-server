@@ -129,14 +129,15 @@ async function run() {
             res.json(result);
         })
 
-        // PUT METHOD for cancelling an order 
+        // PUT METHOD for updating an order status 
         app.put('/orders', async (req, res) => {
             const id = req.query.id;
+            const status = req.query.status;
             console.log(id);
             const filter = { _id: ObjectId(id) };
             const updateDoc = {
                 $set: {
-                    status: 'cancelled'
+                    status: status
                 },
             };
             const result = await ordersCollection.updateOne(filter, updateDoc);
