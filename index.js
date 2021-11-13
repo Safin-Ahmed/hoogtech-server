@@ -21,6 +21,8 @@ async function run() {
         console.log('Connected TO Database');
         const productsCollection = database.collection('products');
         const ordersCollection = database.collection('orders');
+        const reviewsCollection = database.collection('reviews');
+        const usersCollection = database.collection('users');
 
         // GET Method for loading products
         app.get('/products', async (req, res) => {
@@ -39,6 +41,20 @@ async function run() {
             console.log(orders);
         })
 
+        // GET METHOD for Loading Reviews 
+        app.get('/reviews', async (req, res) => {
+            const cursor = reviewsCollection.find({});
+            const reviews = await cursor.toArray();
+            res.json(reviews);
+        })
+
+        // POST METHOD for uploading reviews 
+        app.post('/reviews', async (req, res) => {
+            const doc = req.body;
+            const result = await reviewsCollection.insertOne(doc);
+            res.json(result);
+        })
+
         // POST Method for Sending Orders to database
         app.post('/orders', async (req, res) => {
             const doc = req.body;
@@ -47,7 +63,11 @@ async function run() {
         })
 
         // POST METHOD for sending users to database
-        app.post('/users')
+        app.post('/users', async (req, res) => {
+            const userInfo = req.body;
+            const result = await usersCollection.insertOne(userInfo);
+            res.json(result);
+        })
 
         // Delete Method For Deleting Order
         app.delete('/orders', async (req, res) => {
