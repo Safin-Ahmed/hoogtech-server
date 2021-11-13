@@ -129,6 +129,14 @@ async function run() {
             res.json(result);
         })
 
+        // DELETE method for Deleting Product 
+        app.delete('/products', async (req, res) => {
+            const id = req.query.id;
+            const query = { _id: ObjectId(id) };
+            const result = await productsCollection.deleteOne(query);
+            res.json(result);
+        })
+
         // PUT METHOD for updating an order status 
         app.put('/orders', async (req, res) => {
             const id = req.query.id;
