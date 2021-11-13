@@ -10,7 +10,7 @@ const app = express();
 app.use(cors());
 app.use(express.json())
 
-var serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+var serviceAccount = require('./hoogtech-firebase-adminsdk.json');
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
@@ -23,6 +23,7 @@ async function verifyToken(req, res, next) {
         try {
             const decodedUser = await admin.auth().verifyIdToken(token);
             req.decodedEmail = decodedUser.email;
+            console.log(decodedEmail);
         }
         catch {
 
@@ -158,9 +159,9 @@ async function run() {
             const requester = req.decodedEmail;
             console.log(requester);
             if (requester) {
-                const requesterAccount = usersCollection.findOne({ email: requester });
+                const requesterAccount = await usersCollection.findOne({ email: requester });
                 console.log(requesterAccount);
-                if (requesterAccount.role == "admin") {
+                if (requesterAccount.role === "admin") {
                     const filter = { email: user.email };
                     const updateDoc = {
                         $set: { role: 'admin' }
