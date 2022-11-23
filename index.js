@@ -12,8 +12,7 @@ app.use(express.json())
 
 
 admin.initializeApp({
-    credential: admin.credential.cert(process.env.FIREBASE_SERVICE_ACCOUNT
-)
+    credential: admin.credential.cert(process.env.FIREBASE_SERVICE_ACCOUNT)
 });
 
 async function verifyToken(req, res, next) {
