@@ -11,8 +11,10 @@ app.use(cors());
 app.use(express.json())
 
 
+const appConfig = import('./hoogtech-firebase-adminsdk.json');
+
 admin.initializeApp({
-    credential: admin.credential.cert(process.env.FIREBASE_SERVICE_ACCOUNT)
+    credential: admin.credential.cert(appConfig)
 });
 
 async function verifyToken(req, res, next) {
